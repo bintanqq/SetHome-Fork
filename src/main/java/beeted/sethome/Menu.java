@@ -792,6 +792,16 @@ public class Menu implements Listener {
 
         String homeName = message;
 
+        String regex = config.getString("home-name-regex");
+
+        if (regex == null || !homeName.matches(regex)) {
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString("messages.invalid-home-name")));
+            pendingHomeNames.remove(player);
+            pendingAdminHomes.remove(player);
+            return;
+        }
+
         File dataFolder = new File(plugin.getDataFolder(), "data");
         if (!dataFolder.exists()) dataFolder.mkdirs();
 
@@ -850,7 +860,7 @@ public class Menu implements Listener {
 
     private int getMaxHomesForPlayer(Player player) {
         FileConfiguration config = plugin.getConfig();
-        int defaultMaxHomes = config.getInt("default-maxhomes", 3); // 👈 asegúrate de que coincide con tu config.yml
+        int defaultMaxHomes = config.getInt("default-max-homes", 3); // 👈 asegúrate de que coincide con tu config.yml
 
         int maxHomes = -1;
 

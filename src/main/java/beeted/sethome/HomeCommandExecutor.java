@@ -69,6 +69,15 @@ public class HomeCommandExecutor implements CommandExecutor {
                 // Obtener el nombre del hogar
                 String homeName = args[3];
 
+                String regex = config.getString("home-name-regex");
+
+                // Validar nombre del home
+                if (regex == null || !homeName.matches(regex)) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            config.getString("messages.invalid-home-name")));
+                    return true;
+                }
+
                 // Verificar si las coordenadas están correctamente proporcionadas
                 double x, y, z;
                 try {
@@ -143,6 +152,15 @@ public class HomeCommandExecutor implements CommandExecutor {
 
                 // Obtener el nombre del hogar
                 String homeName = args[3];
+
+                String regex = config.getString("home-name-regex");
+
+                // Validar nombre del home
+                if (regex == null || !homeName.matches(regex)) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            config.getString("messages.invalid-home-name")));
+                    return true;
+                }
 
                 // Ruta de almacenamiento de los datos del jugador
                 File dataFolder = new File(plugin.getDataFolder(), "data");
@@ -273,6 +291,15 @@ public class HomeCommandExecutor implements CommandExecutor {
 
                 // Obtener el nombre del hogar
                 String homeName = args[1];
+
+                String regex = config.getString("home-name-regex");
+
+                // Validar nombre del home
+                if (regex == null || !homeName.matches(regex)) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            config.getString("messages.invalid-home-name")));
+                    return true;
+                }
 
                 // Ruta de almacenamiento de los datos del jugador
                 File dataFolder = new File(plugin.getDataFolder(), "data");
