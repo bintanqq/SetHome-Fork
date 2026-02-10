@@ -521,33 +521,51 @@ public class Menu implements Listener {
 
         Inventory menu = Bukkit.createInventory(new PlayerMenuHolder(), 27, ChatColor.translateAlternateColorCodes('&', config.getString(menuTitlePath)));
 
-        // Bordes
+        // ==== Bordes ====
         String borderGlassColorName = config.getString("menu.glass-pane-color", "GRAY").toUpperCase();
-        Material borderGlassMaterial = Material.matchMaterial(borderGlassColorName + "_STAINED_GLASS_PANE");
-        if (borderGlassMaterial == null) borderGlassMaterial = Material.GRAY_STAINED_GLASS_PANE;
-        ItemStack borderGlassPane = new ItemStack(borderGlassMaterial);
-        ItemMeta borderGlassMeta = borderGlassPane.getItemMeta();
-        borderGlassMeta.setDisplayName(" ");
-        borderGlassPane.setItemMeta(borderGlassMeta);
 
-        int[] borderSlots = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
-        for (int slot : borderSlots) {
-            menu.setItem(slot, borderGlassPane);
+        if (!borderGlassColorName.equals("AIR")) {
+
+            Material borderGlassMaterial = Material.matchMaterial(borderGlassColorName + "_STAINED_GLASS_PANE");
+            if (borderGlassMaterial == null) {
+                borderGlassMaterial = Material.GRAY_STAINED_GLASS_PANE;
+            }
+
+            ItemStack borderGlassPane = new ItemStack(borderGlassMaterial);
+            ItemMeta borderGlassMeta = borderGlassPane.getItemMeta();
+            if (borderGlassMeta != null) {
+                borderGlassMeta.setDisplayName(" ");
+                borderGlassPane.setItemMeta(borderGlassMeta);
+            }
+
+            int[] borderSlots = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
+            for (int slot : borderSlots) {
+                menu.setItem(slot, borderGlassPane);
+            }
         }
 
-        // Vidrio central
+        // ==== Vidrio central ====
         String centerGlassColorName = config.getString("menu.center-glass-color", "LIGHT_BLUE").toUpperCase();
-        Material centerGlassMaterial = Material.matchMaterial(centerGlassColorName + "_STAINED_GLASS_PANE");
-        if (centerGlassMaterial == null) centerGlassMaterial = Material.LIGHT_BLUE_STAINED_GLASS_PANE;
-        ItemStack centerGlassPane = new ItemStack(centerGlassMaterial);
-        ItemMeta centerGlassMeta = centerGlassPane.getItemMeta();
-        centerGlassMeta.setDisplayName(" ");
-        centerGlassPane.setItemMeta(centerGlassMeta);
 
-        menu.setItem(10, centerGlassPane);
-        menu.setItem(12, centerGlassPane);
-        menu.setItem(14, centerGlassPane);
-        menu.setItem(16, centerGlassPane);
+        if (!centerGlassColorName.equals("AIR")) {
+
+            Material centerGlassMaterial = Material.matchMaterial(centerGlassColorName + "_STAINED_GLASS_PANE");
+            if (centerGlassMaterial == null) {
+                centerGlassMaterial = Material.LIGHT_BLUE_STAINED_GLASS_PANE;
+            }
+
+            ItemStack centerGlassPane = new ItemStack(centerGlassMaterial);
+            ItemMeta centerGlassMeta = centerGlassPane.getItemMeta();
+            if (centerGlassMeta != null) {
+                centerGlassMeta.setDisplayName(" ");
+                centerGlassPane.setItemMeta(centerGlassMeta);
+            }
+
+            menu.setItem(10, centerGlassPane);
+            menu.setItem(12, centerGlassPane);
+            menu.setItem(14, centerGlassPane);
+            menu.setItem(16, centerGlassPane);
+        }
 
         // Set Home
         String setHomeMaterialName = config.getString("menu.set-home-item.material").toUpperCase();
@@ -780,17 +798,31 @@ public class Menu implements Listener {
         //if (!pendingHomeNames.containsKey(player)) return;
         //if (!pendingAdminHomes.containsKey(player)) return;
 
-        String message = event.getMessage();
+        String rawMessage = event.getMessage();
+        event.setCancelled(true); // siempre cancelamos para que no aparezca en el chat global
 
+        // Normalizar mensaje: quitar colores y espacios
+        String message = ChatColor.stripColor(
+                ChatColor.translateAlternateColorCodes('&', rawMessage)
+        ).trim().replaceAll("\\s+", "");
+
+        // Cancelar operación
         if (message.equalsIgnoreCase("cancel")) {
             pendingHomeNames.remove(player);
             pendingAdminHomes.remove(player);
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.home-cancelled")));
-            event.setCancelled(true);
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                    config.getString("messages.home-cancelled")));
             return;
         }
 
-        String homeName = message;
+        // Quitar colores del chat (&x y §x)
+        String cleanMessage = ChatColor.stripColor(
+                ChatColor.translateAlternateColorCodes('&', message)
+        );
+
+        String homeName = cleanMessage
+                .trim()                  // quita espacios inicio/fin
+                .replaceAll("\\s+", ""); // elimina espacios (incluye invisibles)
 
         String regex = config.getString("home-name-regex");
 
