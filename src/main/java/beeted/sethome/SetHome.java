@@ -26,14 +26,12 @@ import java.util.*;
 public final class SetHome extends JavaPlugin {
     ConsoleCommandSender console = Bukkit.getConsoleSender();
     private HomeCommandExecutor commandExecutor;
-    //public YamlDocument configYaml;
     private HomeTabCompleter commandTabExecutor;
     private YamlDocument configYaml;
 
-    // Lista de admins que están eliminando un hogar
+    // List admins yang sedang delete home
     private final Set<UUID> adminsDeletingHome = new HashSet<>();
 
-    // Métodos auxiliares
     public void startDeletingHome(UUID adminUUID) {
         adminsDeletingHome.add(adminUUID);
     }
@@ -48,23 +46,18 @@ public final class SetHome extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Crear config por defecto si no existe
         saveDefaultConfig();
-
-        // Recargar para que Bukkit lea los cambios
         reloadConfig();
 
         try {
             configYaml = YamlDocument.create(
                     new File(getDataFolder(), "config.yml"),
                     getResource("config.yml"),
-                    GeneralSettings.DEFAULT, // mantiene la estructura del archivo más limpia
+                    GeneralSettings.DEFAULT,
                     LoaderSettings.builder()
                             .setAutoUpdate(true)
                             .build()
             );
-
-            // Guardar los valores faltantes de vuelta al config.yml
             configYaml.save();
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,11 +67,33 @@ public final class SetHome extends JavaPlugin {
         String userCommand = getConfig().getString("menu.open-command").replace("/", "");
 
         commandExecutor = new HomeCommandExecutor(this);
+        HomeTabCompleter tabCompleter = new HomeTabCompleter(this);
 
-        getCommand(userCommand).setExecutor(commandExecutor);
-        getCommand(userCommand).setTabCompleter(new HomeTabCompleter(this));
+        // Register command utama (home / homegui / dll)
+        PluginCommand mainCmd = getCommand(userCommand);
+        if (mainCmd != null) {
+            mainCmd.setExecutor(commandExecutor);
+            mainCmd.setTabCompleter(tabCompleter);
+        } else {
+            getLogger().warning("Command '" + userCommand + "' not found in plugin.yml! Check menu.open-command in config.");
+        }
+
+        // Register /sethome
+        PluginCommand setHomeCmd = getCommand("sethome");
+        if (setHomeCmd != null) {
+            setHomeCmd.setExecutor(commandExecutor);
+            setHomeCmd.setTabCompleter(tabCompleter);
+        }
+
+        // Register /delhome
+        PluginCommand delHomeCmd = getCommand("delhome");
+        if (delHomeCmd != null) {
+            delHomeCmd.setExecutor(commandExecutor);
+            delHomeCmd.setTabCompleter(tabCompleter);
+        }
 
         getLogger().info("SetHome GUI plugin enabled with dynamic command: /" + userCommand);
+        getLogger().info("Also registered: /sethome and /delhome");
 
         getServer().getPluginManager().registerEvents(new Menu(this), this);
 
@@ -93,15 +108,14 @@ public final class SetHome extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
         console.sendMessage("[SetHome GUI] Saving your home...");
         console.sendMessage("[SetHome GUI] Saving config.");
     }
 
     public void registerConfig() {
-        saveDefaultConfig(); // crea config si no existe
+        saveDefaultConfig();
         getConfig().options().copyDefaults(true);
-        saveConfig(); // guarda las claves por defecto nuevas si faltan
+        saveConfig();
     }
 
     public File getPlayerDataFile(UUID uuid) {

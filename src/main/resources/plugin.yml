@@ -8,3 +8,11 @@ commands:
   home:
     description: Open the home menu.
     aliases: [homegui, sethomegui]
+  sethome:
+    description: Set a home at your current location.
+    usage: /sethome <name>
+    permission: sethome.use
+  delhome:
+    description: Delete one of your homes.
+    usage: /delhome <name>
+    permission: sethome.use
